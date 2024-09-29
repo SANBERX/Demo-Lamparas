@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scake=11.0"/>
+        <title>Lamps AR Demo</title>
+
+        <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+        <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/1.7.0/aframe/build/aframe-ar.js"></script>
+    </head>
+    <body style="margin: 0; overflow: hidden;">
+        <a-scene
+            vr-mode-ui="false"
+            embedded
+            arjs="sourceType: webcam; trackingMethod: best; sourceWidth: 1280; sourceHeight: 720; displayWidth: 1280; displayHeight: 720;">
+            <a-entity camera="fov: 80"></a-entity>
+            <a-entity camera position="0 1.6 5"></a-entity>
+            
+            <a-entity
+                gltf-model="url(models/desk_lamp.glb)"
+                position="0 0 0"
+                scale="0.5 0.5 0.5"
+                rotation="0 180 0"
+                gesture-handler
+            ></a-entity>
+
+            <a-entity
+                gltf-model="url(models/lamp_wall.glb)"
+                position="0 1.5 0"
+                rotation="0 90 0"
+                scale="0.5 0.5 0.5"
+                gesture-handler
+            ></a-entity>
+
+            <a-entity
+                gltf-model="url(models/lamp_ceiling.glb)"
+                position="0 2.5 0"
+                rotation="180 0 0"
+                scale="0.5 0.5 0.5"
+                gesture-handler
+            ></a-entity>        
+        </a-scene>
+
+        <script>
+            AFRAME.registerComponent("gesture-handler", {
+                schema:{
+                    enable:{default:true},
+                },
+                
+                init: function(){
+                    var el=this.el;
+
+                    this.scaleFactor = 1;
+                    this.rotationFactor = 0;
+                    this.previousPinchDistance=null;
+
+                    el.addEventListener("click", function() {
+                        console.log("Lampara seleccionada");
+                    });
+
+                    this.el.sceneEl.canvas.addEventListener("touchmove",(event) => {
+                        if (event.touches.length === 2) {
+
+                            let pinchDistance=
+                                Math.hypot (
+                                    event.touches[0].clientX - event.touches[1].clientX,
+                                    event.touches[0].clientY - event.touches[1].clientY
+                                );
+
+                            if (this.previousPinchDistance){
+                                let scaleChange = pinchDistance - this.previousPinchDistance;
+                                this.scaleFactor += scaleChange * 0.001;
+                                el.setAttribute("scale", {
+                                    x: this.scaleFactor,
+                                    y: this.scaleFactor,
+                                    z: this.scaleFactor,
+                                });
+                            }
+
+                            this.previousPinchDistance = pinchDistance;
+                        } else if (event.touches.length === 1) {
+                            this.rotationFactor += event.touches[0].movementX * 0.5;
+                            el.setAttribute("rotation", { y: this.rotationFactor});
+                        }
+                    });
+                },
+            });
+        </script>
+    </body>
+</html>
